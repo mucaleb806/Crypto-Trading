@@ -1,0 +1,39 @@
+# Crypto trading bot configuration.
+#
+# mode: "paper" trades against a simulated cash/position ledger using live
+# public market prices. "live" routes orders through the Robinhood MCP
+# broker (bot/broker/robinhood_mcp.py) — do not switch to "live" until that
+# broker has been wired up and tested.
+mode: paper
+
+symbols:
+  - id: bitcoin      # CoinGecko coin id, used to fetch prices
+    ticker: BTC
+  - id: ethereum
+    ticker: ETH
+
+capital: 10000.0      # starting paper cash; ignored once mode is "live"
+
+strategy:
+  sma_fast: 10         # fast simple-moving-average window (in price samples)
+  sma_slow: 30          # slow simple-moving-average window
+  history_days: 30      # days of price history to pull per tick
+
+risk:
+  position_size_pct: 0.10        # fraction of capital risked on a new entry
+  max_position_pct: 0.25         # cap on total exposure to a single symbol
+  stop_loss_pct: 0.05            # exit a position if it drops 5% from entry
+  take_profit_pct: 0.10          # exit a position if it rises 10% from entry
+  daily_loss_limit_pct: 0.03     # halt new entries if daily equity drawdown exceeds 3%
+
+# New entries are queued for manual approval (see `python -m bot.cli pending`
+# and `approve`/`reject`). Stop-loss, take-profit, and the daily-loss
+# kill-switch always execute immediately without confirmation, since
+# delaying a protective exit would defeat its purpose.
+require_confirmation: true
+
+poll_interval_seconds: 3600
+
+state_file: data/paper_state.json
+pending_file: data/pending_orders.json
+trade_log_file: data/trade_log.jsonl
